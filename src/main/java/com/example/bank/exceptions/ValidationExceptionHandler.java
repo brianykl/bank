@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 /**
  * global exception handler for validation errors
- * handles errors from validation annotations and returns a list of error messages
  */
 @RestControllerAdvice
 public class ValidationExceptionHandler {
@@ -50,14 +49,14 @@ public class ValidationExceptionHandler {
      * @return a ResponseEntity with the field error messages and a 400 BAD REQUEST status
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidRequestBody(HttpMessageNotReadableException ex) {
+    public ResponseEntity<Map<String, Object>> handleInvalidRequestBody(HttpMessageNotReadableException exception) {
         String message = "invalid request body";
-        Throwable cause = ex.getCause();
+        Throwable cause = exception.getCause();
         if (cause instanceof UnrecognizedPropertyException) {
             UnrecognizedPropertyException upe = (UnrecognizedPropertyException) cause;
             message = upe.getPropertyName() + " is an unrecognized field";
         } else {
-            message = "invalid request body: " + ex.getLocalizedMessage();
+            message = "invalid request body: " + exception.getLocalizedMessage();
         }
         
         Map<String, Object> errorResponse = Map.of(
