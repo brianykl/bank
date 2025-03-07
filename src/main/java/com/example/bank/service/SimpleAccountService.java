@@ -62,26 +62,26 @@ public class SimpleAccountService implements AccountService {
     @Override
     public TransferFundsResponse transferFunds(Long senderId, Long recipientId, BigDecimal value) {
         if (value.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer value must be greater than 0.00");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer value must be greater than 0.00.");
         }
         Account sender = accountRepository.findById(senderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sender account not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sender account not found."));
         
         Account recipient = accountRepository.findById(recipientId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recipient account not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recipient account not found."));
 
         try {
             accountRepository.lockAccounts(senderId, recipientId);
             
             // critical section: check funds and perform transfer
             if (sender.getBalance().compareTo(value) < 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient funds for this transfer");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient funds for this transfer.");
             }
 
             sender.debit(value);
             recipient.credit(value);
-            sender.addTransaction(new Transaction(sender.getId(), recipient.getId(), value.negate(), "Transfer to account " + recipient.getId()));
-            recipient.addTransaction(new Transaction(sender.getId(), recipient.getId(), value, "Transfer from account " + recipient.getId()));
+            sender.addTransaction(new Transaction(sender.getId(), recipient.getId(), value.negate(), "Transfer to account " + recipient.getId() + "."));
+            recipient.addTransaction(new Transaction(sender.getId(), recipient.getId(), value, "Transfer from account " + recipient.getId() + "."));
         } finally {
 
             accountRepository.unlockAccounts(senderId, recipientId);
@@ -102,7 +102,7 @@ public class SimpleAccountService implements AccountService {
     @Override
     public GetTransactionHistoryResponse getTransactionHistory(Long id) {
         Account account = accountRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with id not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with id not found."));
         
         List<TransactionDTO> transactionDTOs = account.getTransactions().stream()
             .map(tx -> new TransactionDTO(tx.getTimestamp(), tx.getValue(), tx.getDescription()))
