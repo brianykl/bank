@@ -1,10 +1,14 @@
 package com.example.bank.repository;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import com.example.bank.model.Account;
 
@@ -38,13 +42,23 @@ public class InMemoryAccountRepository implements AccountRepository {
 
     @Override
     public void lockAccounts(Long... ids) {
-    
+        // sort the ids for consistent locking order
+        List<Long> sortedIds = Arrays.stream(ids).sorted().collect(Collectors.toList());
+
+        for (Long id: sortedIds) {
+            Account account = findById(id).orElseThrow(() -> new IllegalArgumentException("account with id " + id + " not found"));
+            account.getLock().lock();
+        }
     }
 
     @Override
     public void unlockAccounts(Long... ids) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'unlockAccounts'");
+        // sort the ids in reverse for consistent unlicking order
+        List<Long> sortedIds = Arrays.stream(ids).sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        for (Long id : sortedIds) {
+            findById(id).ifPresent(account -> account.getLock().unlock());
+        }
+
     }
 
 }
