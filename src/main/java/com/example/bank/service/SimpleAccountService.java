@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.example.bank.dto.payload.TransactionDTO;
 import com.example.bank.dto.response.CreateAccountResponse;
@@ -59,11 +57,12 @@ public class SimpleAccountService implements AccountService {
      * @param recipientId the id of the account receiving funds
      * @param value the amount to transfer; must be > 0.0 and less than or equal to the sender's balance
      * @return a response confirming that the transfer was successful
+     * @throws BusinessException if the account is not found or not enough funds
      */
     @Override
     public TransferFundsResponse transferFunds(Long senderId, Long recipientId, BigDecimal value) {
         if (value.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer value must be greater than 0.00");
+            throw new BusinessException("Transfer value must be greater than 0.00");
         }
         Account sender = accountRepository.findById(senderId)
             .orElseThrow(() -> new BusinessException( "Sender account not found"));
@@ -71,6 +70,7 @@ public class SimpleAccountService implements AccountService {
         Account recipient = accountRepository.findById(recipientId)
             .orElseThrow(() -> new BusinessException( "Sender account not found"));
 
+        // note: also considering to encapsulate the lockAccounts and unlockAccounts function calls into template function to promote consistency
         try {
             accountRepository.lockAccounts(senderId, recipientId);
             
@@ -98,7 +98,7 @@ public class SimpleAccountService implements AccountService {
      * 
      * @param id the id of the account whose transaction history should be retrieved
      * @return a response containing a list of transactions for the account
-     * @throws ResponseStatusException if the account is not found
+     * @throws BusinessException if the account is not found
      */
     @Override
     public GetTransactionHistoryResponse getTransactionHistory(Long id) {
