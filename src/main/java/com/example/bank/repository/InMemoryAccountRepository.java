@@ -12,6 +12,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Repository;
+
 import com.example.bank.model.Account;
 
 /**
@@ -20,6 +22,7 @@ import com.example.bank.model.Account;
  * provides an implementation for handling concurrency via locks
  * 
  */
+@Repository
 public class InMemoryAccountRepository implements AccountRepository {
     private final ConcurrentHashMap<Long, Account> accounts = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(0);
