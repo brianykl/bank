@@ -1,11 +1,15 @@
 package com.example.bank.service;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.bank.dto.payload.TransactionDTO;
 import com.example.bank.dto.response.CreateAccountResponse;
 import com.example.bank.dto.response.GetTransactionHistoryResponse;
 import com.example.bank.dto.response.TransferFundsResponse;
@@ -13,6 +17,14 @@ import com.example.bank.model.Account;
 import com.example.bank.model.Transaction;
 import com.example.bank.repository.AccountRepository;
 
+
+/**
+ * implementation of AccountService
+ * performs business-logic after recieving request from controller
+ * interfaces with repository to store, retrieve, and update data
+ * 
+ */
+@Service
 public class SimpleAccountService implements AccountService {
 
     private final AccountRepository accountRepository;
@@ -78,10 +90,26 @@ public class SimpleAccountService implements AccountService {
         return new TransferFundsResponse("Transfered successfully.");
     }
 
+
+    /**
+     * retrieves the transaction history for the account with the given id
+     * maps each transaction to a transaction dto
+     * 
+     * @param id the id of the account whose transaction history should be retrieved
+     * @return a response containing a list of transactions for the account
+     * @throws ResponseStatusException if the account is not found
+     */
     @Override
     public GetTransactionHistoryResponse getTransactionHistory(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getTransactionHistory'");
+        Account account = accountRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with id not found"));
+        
+        List<TransactionDTO> transactionDTOs = account.getTransactions().stream()
+            .map(tx -> new TransactionDTO(tx.getTimestamp(), tx.getValue(), tx.getDescription()))
+            .collect(Collectors.toList());
+        
+        return new GetTransactionHistoryResponse(transactionDTOs);
     }
+    
     
 }
