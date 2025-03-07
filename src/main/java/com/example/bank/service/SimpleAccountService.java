@@ -81,8 +81,8 @@ public class SimpleAccountService implements AccountService {
 
             sender.debit(value);
             recipient.credit(value);
-            sender.addTransaction(new Transaction(sender.getId(), recipient.getId(), value.negate(), "Transfer to account " + recipient.getId() + "."));
-            recipient.addTransaction(new Transaction(sender.getId(), recipient.getId(), value, "Transfer from account " + recipient.getId() + "."));
+            sender.addTransaction(new Transaction(sender.getId(), recipient.getId(), value.negate(), "Transfer to account " + recipient.getId()));
+            recipient.addTransaction(new Transaction(sender.getId(), recipient.getId(), value, "Transfer from account " + recipient.getId()));
         } finally {
 
             accountRepository.unlockAccounts(senderId, recipientId);
