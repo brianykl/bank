@@ -13,6 +13,7 @@ import com.example.bank.dto.payload.TransactionDTO;
 import com.example.bank.dto.response.CreateAccountResponse;
 import com.example.bank.dto.response.GetTransactionHistoryResponse;
 import com.example.bank.dto.response.TransferFundsResponse;
+import com.example.bank.exception.custom.BusinessException;
 import com.example.bank.model.Account;
 import com.example.bank.model.Transaction;
 import com.example.bank.repository.AccountRepository;
@@ -44,7 +45,7 @@ public class SimpleAccountService implements AccountService {
     @Override
     public CreateAccountResponse createAccount(BigDecimal initialBalance) {
         Account account = accountRepository.create(initialBalance);
-        account.addTransaction(new Transaction(null, null, initialBalance, "Account created."));
+        account.addTransaction(new Transaction(null, null, initialBalance, "Account created"));
         return new CreateAccountResponse(account.getId(), account.getBalance());
     }
 
@@ -62,20 +63,20 @@ public class SimpleAccountService implements AccountService {
     @Override
     public TransferFundsResponse transferFunds(Long senderId, Long recipientId, BigDecimal value) {
         if (value.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer value must be greater than 0.00.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer value must be greater than 0.00");
         }
         Account sender = accountRepository.findById(senderId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sender account not found."));
+            .orElseThrow(() -> new BusinessException( "Sender account not found"));
         
         Account recipient = accountRepository.findById(recipientId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recipient account not found."));
+            .orElseThrow(() -> new BusinessException( "Sender account not found"));
 
         try {
             accountRepository.lockAccounts(senderId, recipientId);
             
             // critical section: check funds and perform transfer
             if (sender.getBalance().compareTo(value) < 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient funds for this transfer.");
+                throw new BusinessException("Insufficient funds for this transfer");
             }
 
             sender.debit(value);
@@ -87,7 +88,7 @@ public class SimpleAccountService implements AccountService {
             accountRepository.unlockAccounts(senderId, recipientId);
         }
 
-        return new TransferFundsResponse("Transfered successfully.");
+        return new TransferFundsResponse("Transfered successfully");
     }
 
 
@@ -102,7 +103,7 @@ public class SimpleAccountService implements AccountService {
     @Override
     public GetTransactionHistoryResponse getTransactionHistory(Long id) {
         Account account = accountRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account with id not found."));
+            .orElseThrow(() -> new BusinessException("Account with not found"));
         
         List<TransactionDTO> transactionDTOs = account.getTransactions().stream()
             .map(tx -> new TransactionDTO(tx.getTimestamp(), tx.getValue(), tx.getDescription()))
