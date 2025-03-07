@@ -1,4 +1,4 @@
-package com.example.bank.exceptions;
+package com.example.bank.exception.handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class ValidationExceptionHandler {
     /**
      * exception handler to respond to invalid values for fields or missing required fields
      * @param exception the exception thrown when validation fails
-     * @return a ResponseEntity with the field error messages and a 400 BAD REQUEST status
+     * @return a response entity with a formatted error response and 400 status
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
@@ -44,9 +44,9 @@ public class ValidationExceptionHandler {
     }
 
     /**
-     * exception handler to respond to invalid values for fields or missing required fields
-     * @param exception the exception thrown when validation fails
-     * @return a ResponseEntity with the field error messages and a 400 BAD REQUEST status
+     * exception handler to respond to unrecognized properties in the request body
+     * @param exception the exception thrown when there's an unrecognized field in the request body
+     * @return a response entity with a formatted error response and 400 status
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidRequestBody(HttpMessageNotReadableException exception) {
