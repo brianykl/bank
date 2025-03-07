@@ -1,12 +1,14 @@
 package com.example.bank.repository;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -44,16 +46,30 @@ public class InMemoryAccountRepository implements AccountRepository {
     public void lockAccounts(Long... ids) {
         // sort the ids for consistent locking order
         List<Long> sortedIds = Arrays.stream(ids).sorted().collect(Collectors.toList());
+        List<Account> lockedAccounts = new ArrayList<>();
 
-        for (Long id: sortedIds) {
-            Account account = findById(id).orElseThrow(() -> new IllegalArgumentException("account with id " + id + " not found"));
-            account.getLock().lock();
-        }
+        try {
+            for (Long id: sortedIds) {
+                Account account = findById(id).orElseThrow(() -> new IllegalArgumentException("Account with id " + id + " not found."));
+                boolean acquired = account.getLock().tryLock(5, TimeUnit.SECONDS);
+                if (!acquired) {
+                    throw new RuntimeException("Could not acquire lock for account " + id);
+                }
+                lockedAccounts.add(account);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            lockedAccounts.forEach(account -> account.getLock().unlock());
+        } catch (Exception e) {
+            lockedAccounts.forEach(account -> account.getLock().unlock());
+            throw e;
+        }    
+        
     }
 
     @Override
     public void unlockAccounts(Long... ids) {
-        // sort the ids in reverse for consistent unlicking order
+        // sort the ids in reverse for consistent unlocking order
         List<Long> sortedIds = Arrays.stream(ids).sorted(Comparator.reverseOrder()).collect(Collectors.toList());
         for (Long id : sortedIds) {
             findById(id).ifPresent(account -> account.getLock().unlock());
