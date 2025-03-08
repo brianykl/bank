@@ -1,4 +1,4 @@
-package com.example.bank.event;
+package com.example.bank.event.event;
 
 import java.math.BigDecimal;
 
