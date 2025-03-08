@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.example.bank.dto.payload.TransactionDTO;
 import com.example.bank.dto.response.CreateAccountResponse;
 import com.example.bank.dto.response.GetTransactionHistoryResponse;
 import com.example.bank.dto.response.TransferFundsResponse;
+import com.example.bank.event.event.AccountCreationEvent;
+import com.example.bank.event.event.TransferFundsEvent;
 import com.example.bank.exception.custom.BusinessException;
 import com.example.bank.model.Account;
 import com.example.bank.model.Transaction;
@@ -27,10 +30,12 @@ import com.example.bank.repository.AccountRepository;
 public class SimpleAccountService implements AccountService {
 
     private final AccountRepository accountRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
-    public SimpleAccountService(AccountRepository accountRepository) {
+    public SimpleAccountService(AccountRepository accountRepository, ApplicationEventPublisher eventPublisher) {
         this.accountRepository = accountRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -44,6 +49,7 @@ public class SimpleAccountService implements AccountService {
     public CreateAccountResponse createAccount(BigDecimal initialBalance) {
         Account account = accountRepository.create(initialBalance);
         account.addTransaction(new Transaction(null, null, initialBalance, "Account created"));
+        eventPublisher.publishEvent(new AccountCreationEvent(account.getId(), account.getBalance()));
         return new CreateAccountResponse(account.getId(), account.getBalance());
     }
 
@@ -88,6 +94,7 @@ public class SimpleAccountService implements AccountService {
             accountRepository.unlockAccounts(senderId, recipientId);
         }
 
+        eventPublisher.publishEvent(new TransferFundsEvent(senderId, recipientId, value));
         return new TransferFundsResponse("Transfered successfully");
     }
 
