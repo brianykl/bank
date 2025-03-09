@@ -19,7 +19,9 @@ Outlined interfaces for the services and repository. Provided implementation for
 
 Controller expects request data transfer objects and returns response data transfer objects.
 
-## testing
+Makes use of domain events for logging key actions that change the state of accounts, which can be extended to add additional behaviour such as sending notifications.
+
+## Testing
 Can test account creation with this request:
 
 curl -X POST http://localhost:8080/accounts/create \
@@ -46,3 +48,5 @@ curl -X GET http://localhost:8080/accounts/transactions \
      -H "Content-Type: application/json" \
      -d '{"id": 0}' \
      -w "\n"
+
+To run unit tests, run: ./mvnw test

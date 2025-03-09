@@ -52,7 +52,7 @@ public class SimpleAccountServiceTest {
         BusinessException exception = assertThrows(BusinessException.class, () ->
             accountService.transferFunds(1L, 2L, BigDecimal.valueOf(600))
         );
-        assertTrue(exception.getMessage().contains("insufficient funds"));
+        assertTrue(exception.getMessage().contains("Insufficient funds"));
     }
 
 }
