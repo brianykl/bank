@@ -2,6 +2,7 @@ package com.example.bank.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.example.bank.exception.custom.RepositoryException;
 import com.example.bank.model.Account;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,7 +61,7 @@ public class InMemoryAccountRepositoryTest {
     @Test
     public void testLockAccountsWithInvalidId() {
         // attempt to lock an account with an id that doesn't exist
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> repository.lockAccounts(999L));
+        Exception exception = assertThrows(RepositoryException.class, () -> repository.lockAccounts(999L));
         assertTrue(exception.getMessage().contains("not found"),
                 "Should throw an exception indicating the account was not found");
     }

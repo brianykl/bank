@@ -14,10 +14,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * global exception handler for validation errors
+ * global exception handler for request validation errors
  */
 @RestControllerAdvice
-public class ValidationExceptionHandler {
+public class RequestValidationExceptionHandler {
 
     /**
      * exception handler to respond to invalid values for fields or missing required fields

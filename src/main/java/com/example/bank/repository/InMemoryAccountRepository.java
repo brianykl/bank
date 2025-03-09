@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
+import com.example.bank.exception.custom.RepositoryException;
 import com.example.bank.model.Account;
 
 /**
@@ -53,19 +54,24 @@ public class InMemoryAccountRepository implements AccountRepository {
 
         try {
             for (Long id: sortedIds) {
-                Account account = findById(id).orElseThrow(() -> new IllegalArgumentException("Account with id " + id + " not found."));
+                Account account = findById(id).orElseThrow(() -> new RepositoryException("Account with id " + id + " not found"));
                 boolean acquired = account.getLock().tryLock(5, TimeUnit.SECONDS);
                 if (!acquired) {
-                    throw new RuntimeException("Could not acquire lock for account " + id);
+                    throw new RepositoryException("Could not acquire lock for account " + id);
                 }
                 lockedAccounts.add(account);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             lockedAccounts.forEach(account -> account.getLock().unlock());
+            throw new RepositoryException("Locking process was interrupted", e);
         } catch (Exception e) {
             lockedAccounts.forEach(account -> account.getLock().unlock());
-            throw e;
+            if (e instanceof RepositoryException) {
+                throw e;
+            } else {
+                throw new RepositoryException(e.getMessage(), e);
+            }
         }    
         
     }
