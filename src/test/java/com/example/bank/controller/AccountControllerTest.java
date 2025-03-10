@@ -22,6 +22,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.when;
 
+
+/**
+ * unit test for AccountController
+ */
 @WebMvcTest(AccountController.class)
 public class AccountControllerTest {
 
