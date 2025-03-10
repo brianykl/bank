@@ -71,7 +71,7 @@ public class AccountController {
      * @param request the GetTransactionHistoryRequest containing the account id
      * @return a GetTransactionHistoryResponse with a list of transaction details
      */
-    @GetMapping("/transactions")
+    @PostMapping("/transactions")
     public GetTransactionHistoryResponse getTransactionHistory(@Valid @RequestBody GetTransactionHistoryRequest request) {
         return accountService.getTransactionHistory(request.getId());
     }
