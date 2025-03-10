@@ -35,7 +35,7 @@ curl -X POST http://localhost:8080/accounts/create \
      -d '{"initialBalance": 1000.00}' \
      -w "\n"
 
-Can test trasnferring between the two created accounts above with this:
+Can test transferring between the two created accounts above with this:
 
 curl -X POST http://localhost:8080/accounts/transfer \
      -H "Content-Type: application/json" \
@@ -44,7 +44,7 @@ curl -X POST http://localhost:8080/accounts/transfer \
 
 Can test getting account history for an account with this:
 
-curl -X GET http://localhost:8080/accounts/transactions \
+curl -X POST http://localhost:8080/accounts/transactions \
      -H "Content-Type: application/json" \
      -d '{"id": 0}' \
      -w "\n"
